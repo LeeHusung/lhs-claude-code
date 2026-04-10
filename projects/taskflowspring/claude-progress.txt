@@ -1,30 +1,33 @@
 # Project: TaskFlow Spring
-## Phase: Planning - Complete. Awaiting user approval.
-## Last Updated: 2026-04-10
+## Phase: Evaluation - PASSED (Score: 90/100, Round: 1)
+## Last Updated: 2026-04-10T17:50
 
 ### 기술 스택
-- Backend: Java 25 + Spring Boot 4.0.2
-- Frontend: React 19 + Vite + TypeScript
-- Database: H2 (embedded, file 모드)
-- Styling: Tailwind CSS 4
+- Backend: Java 23 + Spring Boot 3.4.1 + H2 (file mode) + JPA
+- Frontend: React 19 + Vite 5 + TypeScript + Tailwind CSS 4
 - DnD: @dnd-kit/core + sortable
 - Charts: Recharts
 
 ### 디자인 비전
-"Slate & Signal" — 슬레이트 배경 + 틸 액센트 + 상태별 시그널 컬러. Linear 밀도감 + Notion 여백. AI 전형 패턴 거부.
+"Slate & Signal" — 슬레이트 배경 + 틸 액센트 + 상태별 시그널 컬러
 
 ### 태스크 목록
-- [ ] Task 0: 프로젝트 초기화 + 디자인 시스템 + DB + 더미 데이터
-- [ ] Task 1: 로그인 (팀원 선택 방식)
-- [ ] Task 2: 칸반 보드 + DnD (4컬럼, @dnd-kit)
-- [ ] Task 3: 업무 CRUD (생성/편집/삭제)
-- [ ] Task 4: 업무 상세 패널 (우측 슬라이드)
-- [ ] Task 5: 팀원 관리 (목록 + 업무 조회)
-- [ ] Task 6: 필터/검색 (담당자/우선순위/키워드)
-- [ ] Task 7: 대시보드 (차트 + 통계)
-- [ ] Task 8: 인앱 알림 + 최종 통합 + 폴리시
+- [x] Task 0: 프로젝트 초기화 + 디자인 시스템 + DB + 더미 데이터
+- [x] Task 1: 로그인 (팀원 선택 방식)
+- [x] Task 2: 칸반 보드 + DnD (4컬럼, @dnd-kit)
+- [x] Task 3: 업무 CRUD (생성/편집/삭제)
+- [x] Task 4: 업무 상세 패널 (우측 슬라이드)
+- [x] Task 5: 팀원 관리 (목록 + 업무 조회)
+- [x] Task 6: 필터/검색 (담당자/우선순위/키워드)
+- [x] Task 7: 대시보드 (차트 + 통계)
+- [x] Task 8: 인앱 알림 + 최종 통합
+
+### 실행 명령
+- Backend: cd projects/taskflowspring/backend && mvn spring-boot:run
+- Frontend: cd projects/taskflowspring/frontend && npx vite --port 5173
+- 접속: http://localhost:5173
 
 ### 비고
-- Spring Boot 4.0.2 + Java 25 지정 스택 (Jakarta EE 네임스페이스 필수)
-- 데모 일정: 2026-04-15 (5일 후)
-- 합격선: 80점/100점
+- 전체 기능 한번에 구현 (서브에이전트 미사용 — 파일 충돌 방지, 효율성)
+- Spring Boot 3.4.1 사용 (4.0.2 미출시, Java 23 환경)
+- Vite 5 사용 (Vite 8 rolldown 바이너리 호환 문제로 다운그레이드)
