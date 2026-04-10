@@ -1,0 +1,15 @@
+# Generated projects
+projects/
+
+# IDE
+.idea/
+
+# Build artifacts (safety net if project init at root)
+node_modules/
+dist/
+.next/
+build/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
