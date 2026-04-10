@@ -2,6 +2,7 @@
 
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { Plus } from "lucide-react";
 import clsx from "clsx";
 import type { Task, TaskStatus } from "@/lib/types";
 import { STATUS_LABELS } from "@/lib/types";
@@ -11,6 +12,8 @@ interface KanbanColumnProps {
   status: TaskStatus;
   tasks: Task[];
   isOver?: boolean;
+  onTaskClick?: (task: Task) => void;
+  onAddTask?: () => void;
 }
 
 const COLUMN_ACCENT: Record<TaskStatus, string> = {
@@ -27,7 +30,7 @@ const COLUMN_COUNT_COLOR: Record<TaskStatus, string> = {
   done: "text-success bg-surface",
 };
 
-export default function KanbanColumn({ status, tasks, isOver }: KanbanColumnProps) {
+export default function KanbanColumn({ status, tasks, isOver, onTaskClick, onAddTask }: KanbanColumnProps) {
   const { setNodeRef } = useDroppable({ id: status });
 
   const taskIds = tasks.map((t) => t.id);
@@ -64,7 +67,7 @@ export default function KanbanColumn({ status, tasks, isOver }: KanbanColumnProp
       >
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
+            <TaskCard key={task.id} task={task} onClick={onTaskClick} />
           ))}
         </SortableContext>
 
@@ -75,6 +78,17 @@ export default function KanbanColumn({ status, tasks, isOver }: KanbanColumnProp
               {isOver ? "Drop here" : "No tasks"}
             </p>
           </div>
+        )}
+
+        {/* Add task button */}
+        {status === "todo" && onAddTask && (
+          <button
+            onClick={onAddTask}
+            className="flex items-center gap-2 px-3 py-2 text-xs text-text-tertiary hover:text-text-secondary hover:bg-surface-hover rounded-lg transition-colors mt-1"
+          >
+            <Plus size={14} />
+            업무 추가
+          </button>
         )}
       </div>
     </div>

@@ -18,8 +18,15 @@ import type { Task, TaskStatus } from "@/lib/types";
 import { COLUMNS } from "@/lib/types";
 import KanbanColumn from "@/components/KanbanColumn";
 import TaskCard, { TaskCardOverlay } from "@/components/TaskCard";
+import TaskDetailPanel from "@/components/TaskDetailPanel";
+import TaskForm from "@/components/TaskForm";
+import type { FilterState } from "@/components/FilterBar";
 
 type ColumnMap = Record<TaskStatus, Task[]>;
+
+interface KanbanBoardProps {
+  filters?: FilterState;
+}
 
 function groupByStatus(tasks: Task[]): ColumnMap {
   const map: ColumnMap = { todo: [], in_progress: [], in_review: [], done: [] };
@@ -28,14 +35,13 @@ function groupByStatus(tasks: Task[]): ColumnMap {
       map[task.status].push(task);
     }
   }
-  // Ensure sorted by position
   for (const col of COLUMNS) {
     map[col].sort((a, b) => a.position - b.position);
   }
   return map;
 }
 
-export default function KanbanBoard() {
+export default function KanbanBoard({ filters }: KanbanBoardProps) {
   const [columns, setColumns] = useState<ColumnMap>({
     todo: [],
     in_progress: [],
@@ -47,12 +53,19 @@ export default function KanbanBoard() {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [overColumnId, setOverColumnId] = useState<TaskStatus | null>(null);
   const [saving, setSaving] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/tasks");
+      const params = new URLSearchParams();
+      if (filters?.search) params.set("search", filters.search);
+      if (filters?.assigneeId) params.set("assignee_id", String(filters.assigneeId));
+      if (filters?.priority) params.set("priority", filters.priority);
+      const qs = params.toString();
+      const res = await fetch(`/api/tasks${qs ? `?${qs}` : ""}`);
       if (!res.ok) throw new Error("Failed to load tasks");
       const tasks: Task[] = await res.json();
       setColumns(groupByStatus(tasks));
@@ -61,7 +74,7 @@ export default function KanbanBoard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filters]);
 
   useEffect(() => {
     fetchTasks();
@@ -73,7 +86,6 @@ export default function KanbanBoard() {
     })
   );
 
-  // Find which column a task id belongs to
   function findColumn(taskId: number): TaskStatus | undefined {
     for (const col of COLUMNS) {
       if (columns[col].some((t) => t.id === taskId)) return col;
@@ -82,8 +94,7 @@ export default function KanbanBoard() {
   }
 
   function handleDragStart(event: DragStartEvent) {
-    const { active } = event;
-    const task = active.data.current?.task as Task | undefined;
+    const task = event.active.data.current?.task as Task | undefined;
     if (task) setActiveTask(task);
   }
 
@@ -96,8 +107,6 @@ export default function KanbanBoard() {
 
     const activeId = active.id as number;
     const overId = over.id;
-
-    // over could be a column id (string) or a task id (number)
     const overIsColumn = COLUMNS.includes(overId as TaskStatus);
     const targetColumn: TaskStatus | undefined = overIsColumn
       ? (overId as TaskStatus)
@@ -113,7 +122,6 @@ export default function KanbanBoard() {
     const sourceColumn = findColumn(activeId);
     if (!sourceColumn || sourceColumn === targetColumn) return;
 
-    // Move the card optimistically across columns
     setColumns((prev) => {
       const sourceTasks = [...prev[sourceColumn]];
       const targetTasks = [...prev[targetColumn]];
@@ -123,7 +131,6 @@ export default function KanbanBoard() {
       const [movedTask] = sourceTasks.splice(taskIndex, 1);
       const updatedTask = { ...movedTask, status: targetColumn };
 
-      // Insert before the over element (if over is a task in target col)
       if (!overIsColumn) {
         const overIndex = targetTasks.findIndex((t) => t.id === (overId as number));
         if (overIndex !== -1) {
@@ -152,60 +159,63 @@ export default function KanbanBoard() {
 
     const activeId = active.id as number;
     const overId = over.id;
-
     const overIsColumn = COLUMNS.includes(overId as TaskStatus);
     const targetColumn: TaskStatus | undefined = overIsColumn
       ? (overId as TaskStatus)
       : findColumn(overId as number);
 
     if (!targetColumn) return;
-
     const sourceColumn = findColumn(activeId);
     if (!sourceColumn) return;
 
-    // Handle same-column reorder
     if (sourceColumn === targetColumn && !overIsColumn) {
       setColumns((prev) => {
         const tasks = [...prev[sourceColumn]];
         const oldIndex = tasks.findIndex((t) => t.id === activeId);
         const newIndex = tasks.findIndex((t) => t.id === (overId as number));
         if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return prev;
-        const reordered = arrayMove(tasks, oldIndex, newIndex);
-        return { ...prev, [sourceColumn]: reordered };
+        return { ...prev, [sourceColumn]: arrayMove(tasks, oldIndex, newIndex) };
       });
     }
 
-    // Persist to server
     setSaving(true);
-    try {
-      // Get current state to determine positions
-      setColumns((prev) => {
-        const colTasks = prev[targetColumn];
-        const taskIndex = colTasks.findIndex((t) => t.id === activeId);
-        const newPosition = taskIndex !== -1 ? taskIndex : colTasks.length - 1;
+    setColumns((prev) => {
+      const colTasks = prev[targetColumn];
+      const taskIndex = colTasks.findIndex((t) => t.id === activeId);
+      const newPosition = taskIndex !== -1 ? taskIndex : colTasks.length - 1;
 
-        // Fire and forget the API call with the latest state
-        fetch(`/api/tasks/${activeId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: targetColumn, position: newPosition }),
+      fetch(`/api/tasks/${activeId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: targetColumn, position: newPosition }),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Save failed");
         })
-          .then(async (res) => {
-            if (!res.ok) throw new Error("Save failed");
-          })
-          .catch(() => {
-            // Revert on error
-            fetchTasks();
-          })
-          .finally(() => {
-            setSaving(false);
-          });
+        .catch(() => fetchTasks())
+        .finally(() => setSaving(false));
 
-        return prev;
-      });
-    } catch {
-      setSaving(false);
-    }
+      return prev;
+    });
+  }
+
+  function handleTaskClick(task: Task) {
+    setSelectedTask(task);
+  }
+
+  function handleTaskUpdate(updated: Task) {
+    setSelectedTask(null);
+    fetchTasks();
+  }
+
+  function handleTaskDelete(taskId: number) {
+    setSelectedTask(null);
+    fetchTasks();
+  }
+
+  function handleTaskCreated() {
+    setShowCreateForm(false);
+    fetchTasks();
   }
 
   if (loading) {
@@ -236,36 +246,68 @@ export default function KanbanBoard() {
     );
   }
 
+  const hasResults = COLUMNS.some((col) => columns[col].length > 0);
+
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex gap-5 h-full">
-        {COLUMNS.map((status) => (
-          <KanbanColumn
-            key={status}
-            status={status}
-            tasks={columns[status]}
-            isOver={overColumnId === status}
-          />
-        ))}
-      </div>
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        {hasResults ? (
+          <div className="flex gap-5 h-full">
+            {COLUMNS.map((status) => (
+              <KanbanColumn
+                key={status}
+                status={status}
+                tasks={columns[status]}
+                isOver={overColumnId === status}
+                onTaskClick={handleTaskClick}
+                onAddTask={status === "todo" ? () => setShowCreateForm(true) : undefined}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex-1 flex items-center justify-center h-full">
+            <div className="text-center">
+              <p className="text-text-secondary text-sm mb-2">검색 결과가 없습니다</p>
+              <p className="text-text-tertiary text-xs">필터를 조정하거나 초기화해 보세요</p>
+            </div>
+          </div>
+        )}
 
-      <DragOverlay dropAnimation={null}>
-        {activeTask ? <TaskCardOverlay task={activeTask} /> : null}
-      </DragOverlay>
+        <DragOverlay dropAnimation={null}>
+          {activeTask ? <TaskCardOverlay task={activeTask} /> : null}
+        </DragOverlay>
 
-      {/* Saving indicator */}
-      {saving && (
-        <div className="fixed bottom-4 right-4 flex items-center gap-2 bg-surface border border-border px-3 py-2 rounded-lg shadow-lg text-xs text-text-secondary">
-          <Loader2 size={12} className="animate-spin" />
-          Saving...
-        </div>
+        {saving && (
+          <div className="fixed bottom-4 right-4 flex items-center gap-2 bg-surface border border-border px-3 py-2 rounded-lg shadow-lg text-xs text-text-secondary z-50">
+            <Loader2 size={12} className="animate-spin" />
+            Saving...
+          </div>
+        )}
+      </DndContext>
+
+      {/* Task Detail Panel */}
+      {selectedTask && (
+        <TaskDetailPanel
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onUpdate={handleTaskUpdate}
+          onDelete={handleTaskDelete}
+        />
       )}
-    </DndContext>
+
+      {/* Task Create Form */}
+      {showCreateForm && (
+        <TaskForm
+          onSave={handleTaskCreated}
+          onClose={() => setShowCreateForm(false)}
+        />
+      )}
+    </>
   );
 }

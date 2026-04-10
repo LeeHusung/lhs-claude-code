@@ -9,6 +9,7 @@ import type { Task, Priority } from "@/lib/types";
 interface TaskCardProps {
   task: Task;
   isDragging?: boolean;
+  onClick?: (task: Task) => void;
 }
 
 const PRIORITY_BAR_COLOR: Record<Priority, string> = {
@@ -79,7 +80,7 @@ export function TaskCardOverlay({ task }: { task: Task }) {
   );
 }
 
-export default function TaskCard({ task, isDragging }: TaskCardProps) {
+export default function TaskCard({ task, isDragging, onClick }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -114,8 +115,9 @@ export default function TaskCard({ task, isDragging }: TaskCardProps) {
     <div
       ref={setNodeRef}
       style={style}
+      onClick={() => onClick?.(task)}
       className={clsx(
-        "group relative bg-surface-raised border rounded-xl cursor-default select-none transition-all duration-150",
+        "group relative bg-surface-raised border rounded-xl cursor-pointer select-none transition-all duration-150",
         isDragging
           ? "border-accent shadow-lg shadow-black/30"
           : "border-border hover:border-border hover:bg-surface-hover",
