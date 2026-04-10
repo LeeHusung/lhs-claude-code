@@ -1,0 +1,28 @@
+# Project: TaskFlow
+## Phase: Planning - Approved. Ready for Implementation.
+## Last Updated: 2026-04-10
+
+### 기술 스택
+- Frontend/Backend: Next.js (App Router) + API Routes
+- Database: SQLite
+- Styling: Tailwind CSS
+
+### 디자인 비전
+"Focused Workspace" — 깊은 잉크빛 다크 캔버스 + 따뜻한 앰버/골드 액센트. Linear의 우아함 + Trello의 칸반 직관성.
+
+### 태스크 목록
+- [ ] Task 0: 프로젝트 초기화 + 디자인 시스템 + DB 설정 + 더미 데이터
+- [ ] Task 1: 로그인 화면 (팀원 아바타 선택 + 이메일 폼)
+- [ ] Task 2: 칸반 보드 + 드래그앤드롭
+- [ ] Task 3: 업무 CRUD (생성/편집/삭제)
+- [ ] Task 4: 업무 상세 슬라이드 패널
+- [ ] Task 5: 팀원 관리 화면
+- [ ] Task 6: 필터/검색 기능
+- [ ] Task 7: 대시보드 (통계 + 차트)
+- [ ] Task 8: 인앱 알림 (선택)
+- [ ] Task 9: 통합 + 더미 데이터 검증 + 빌드 확인
+
+### 비고
+- 데모 일정: 2026-04-15 (5일 후)
+- Task 8(인앱 알림)은 선택 기능 — 시간 부족 시 스킵 가능
+- Phase B(Task 1,2,3)와 Phase C(Task 4,5,6,7) 각각 병렬 실행 가능

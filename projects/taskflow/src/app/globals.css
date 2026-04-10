@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Canvas & Surface */
+  --color-canvas: #0D1117;
+  --color-surface: #161B22;
+  --color-surface-hover: #1C2128;
+  --color-surface-raised: #21262D;
+  --color-border: #30363D;
+  --color-border-subtle: #21262D;
+
+  /* Accent */
+  --color-accent: #E3B341;
+  --color-accent-hover: #F0C351;
+  --color-accent-muted: #E3B34126;
+
+  /* Status */
+  --color-success: #3FB950;
+  --color-danger: #F85149;
+  --color-info: #58A6FF;
+  --color-warning: #D29922;
+
+  /* Priority */
+  --color-priority-high: #F85149;
+  --color-priority-medium: #D29922;
+  --color-priority-low: #8B949E;
+
+  /* Text */
+  --color-text-primary: #E6EDF3;
+  --color-text-secondary: #8B949E;
+  --color-text-tertiary: #6E7681;
+
+  /* Font */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-text-primary);
+}
+
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
