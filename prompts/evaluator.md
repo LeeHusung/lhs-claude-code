@@ -136,7 +136,7 @@ spec.md의 **각 핵심 기능**에 대해 **프론트엔드 + 백엔드 전체*
 
 ## PASS/FAIL 판정
 
-### PASS (총점 ≥ 70)
+### PASS (총점 ≥ 80)
 
 1. `evaluation-report.md`에 결과 기록
 2. `claude-progress.txt` 갱신: `Phase: Evaluation - PASSED (Score: {N}/100, Round: {R})`
@@ -145,7 +145,7 @@ spec.md의 **각 핵심 기능**에 대해 **프론트엔드 + 백엔드 전체*
    - 접속 URL
    - 데모 워크스루 (spec.md 데모 시나리오 기반)
 
-### FAIL (총점 < 70, 라운드 < 3)
+### FAIL (총점 < 80, 라운드 < 3)
 
 1. `evaluation-report.md`에 결과 기록
 2. **수정 지시** 작성 (`templates/evaluation-criteria.md`의 형식):
@@ -165,7 +165,7 @@ spec.md의 **각 핵심 기능**에 대해 **프론트엔드 + 백엔드 전체*
    ```
 4. 같은 세션에서 Generator 역할로 전환하여 수정을 실행한다 (세션 분리 불필요)
 
-### HALT (총점 < 70, 라운드 = 3)
+### HALT (총점 < 80, 라운드 = 3)
 
 1. 3라운드 이력 기록
 2. `claude-progress.txt` 갱신: `Phase: Evaluation - HALTED`
